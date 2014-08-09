@@ -8,11 +8,42 @@
 
 #import "TwitterAccoutSampleAppDelegate.h"
 
+// (1) importしまーす
+#import <Accounts/Accounts.h>
+
 @implementation TwitterAccoutSampleAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+
+    // (2) とりあえずここに書いちゃおう
+    ACAccountStore *store = [ACAccountStore new];
+    ACAccountType *type = [store accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
+    // optionsって何渡せばいいか分からんので、とりあえず空のやつでいいや
+    // NSDictionary *options = @{};
+    // しらべた感じ、何も要らないならnilを渡せって言われた
+    
+    // (3) ユーザに許可要求する
+    [store requestAccessToAccountsWithType:type options:nil completion:^(BOOL granted, NSError *error) {
+        if (! granted) {
+            NSLog(@"%@", error);
+            return;
+        }
+        // (4) 許可されたので、取得する
+        NSArray *accounts = [store accountsWithAccountType:type];
+        // (5) 許可されたけど、無かったりして
+        if (accounts.count < 1) {
+            return;
+        }
+        // (6) とりあえず最初のやつで
+        ACAccount *account = accounts[0];
+        NSLog(@"取得できたやつ %@", NSStringFromClass([account class]));
+        NSLog(@"ユーザネーム? %@", [account username]);
+        NSLog(@"ユーザID? %@", [[account valueForKey:@"properties"] objectForKey:@"user_id"]);
+        return;
+    }];
+    
     return YES;
 }
 							
